@@ -60,23 +60,21 @@ test_y = test["cnt"]
 model = xgb.XGBRegressor()
 # ハイパーパラメータ探索
 param = {
-    'colsample_bytree': [0.6, 0.9],
-    'eta': [0.01, 0.05, 0.1], 
-    'gamma': [0, 3, 10], 
-    'max_depth':[3, 6, 9], 
-    'min_child_weigh': [0.5, 1, 3], 
-    'subsample': [0.6, 0.9]
+    'colsample_bytree': [0.9],
+    'eta': [0.08], 
+    'gamma': [0], 
+    'max_depth':[6], 
+    'min_child_weight': [7],
+    'subsample': [0.9]
 }
 cv_shuffle = KFold(n_splits=5, shuffle=True, random_state = 0)
 reg = GridSearchCV(estimator=model, param_grid=param, cv=cv_shuffle, scoring="neg_mean_squared_error", n_jobs=-1, verbose=1)
 reg.fit(train_X, train_y)
 print(reg.best_params_, reg.best_score_)
+pred1 = reg.predict(test_X)
 
-# 改めて最適パラメータで学習
-model = xgb.XGBRegressor(**reg.best_params_)
-model.fit(train_X, train_y)
 # pred1=model.predict(train_X)
-pred1 = model.predict( test_X )
+# pred1 = model.predict( test_X )
 
 # RMSEの計算
 var = RMSE( test_y, pred1 )
@@ -90,14 +88,14 @@ plt.legend()
 # plt.show()
 
 
-df_test = pd.read_csv("data/test.tsv", sep='\t')
-df_test= pd.get_dummies(df_test, columns=["weathersit"],drop_first = True)
-df_test["hr_sin"] = np.sin(2 * np.pi * df_test["hr"]/24)
-df_test["hr_cos"] = np.cos(2 * np.pi * df_test["hr"]/24)
-df_test_X = df_test[features]
-pred = model.predict(df_test_X)
-df_test['cnt'] = pred
-df_test[['id', 'cnt']].to_csv('data/submit.csv', header=False,index=False)
+# df_test = pd.read_csv("data/test.tsv", sep='\t')
+# df_test= pd.get_dummies(df_test, columns=["weathersit"],drop_first = True)
+# df_test["hr_sin"] = np.sin(2 * np.pi * df_test["hr"]/24)
+# df_test["hr_cos"] = np.cos(2 * np.pi * df_test["hr"]/24)
+# df_test_X = df_test[features]
+# pred = model.predict(df_test_X)
+# df_test['cnt'] = pred
+# df_test[['id', 'cnt']].to_csv('data/submit.csv', header=False,index=False)
 
 
 # plt.figure(figsize=(10,8))
@@ -132,7 +130,7 @@ df_test[['id', 'cnt']].to_csv('data/submit.csv', header=False,index=False)
 # plt.show()
 
 # 箱ひげ図の描画（表示順序をorderで指定している）
-# train = train[train["holiday"] == 0]
+# train = train[train["holiday"] == 1]
 # sns.boxplot( x="weekday", y="cnt", data=train, order=["0","1","2","3","4","5","6"] )
 # # y軸にラベルを付けます
 # plt.ylabel("sales")
